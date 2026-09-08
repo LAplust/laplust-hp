@@ -5,7 +5,11 @@ import NewsList from '@/components/NewsList';
 import HomeLink from '@/components/HomeLink';
 import { getAllNews } from '@/lib/news';
 
-export const metadata: Metadata = { title: 'News' };
+export const metadata: Metadata = {
+  title: 'News',
+  description:
+    '株式会社LAplust（ラプラス）のニュース一覧。プレスリリース、メディア掲載、イベント出展などの最新情報をお届けします。',
+};
 
 export default function NewsIndex() {
   const news = getAllNews();

@@ -24,6 +24,16 @@ export const metadata: Metadata = {
   },
   description:
     '株式会社LAplust（ラプラス）は、動画や画像解析に特化した機械学習/深層学習技術の研究開発を行い、実践知を蓄積し、課題解決するためのプロダクトを社会実装しています。',
+  // 各ページの正規URLを自身のURLとして明示（'./'は現在のパスに解決される）
+  alternates: { canonical: './' },
+  openGraph: {
+    type: 'website',
+    siteName: '株式会社LAplust（ラプラス）',
+    locale: 'ja_JP',
+    // SNS等でシェアされた際に表示される既定画像（旧サイトと同一のロゴ画像）
+    images: ['/images/og_default.png'],
+  },
+  twitter: { card: 'summary_large_image' },
 };
 
 const GTM_ID = 'GTM-K28LDCGJ';

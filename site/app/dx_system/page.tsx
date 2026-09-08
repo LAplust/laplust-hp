@@ -1,7 +1,11 @@
 import type { Metadata } from 'next';
 import ProjectListPage from '@/components/ProjectListPage';
 
-export const metadata: Metadata = { title: 'DX支援システム開発 プロジェクト一覧' };
+export const metadata: Metadata = {
+  title: 'DX支援システム開発 プロジェクト一覧',
+  description:
+    '株式会社LAplust（ラプラス）のDX支援システム開発 プロジェクト一覧。AI・画像解析を活用した業務効率化・システム開発の取り組みをご紹介します。',
+};
 
 export default function DxSystemPage() {
   return (

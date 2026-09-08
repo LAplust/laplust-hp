@@ -20,7 +20,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const label = slug === 'k04markw' ? 'All' : slug.charAt(0).toUpperCase() + slug.slice(1);
-  return { title: `News - ${label}` };
+  return {
+    title: `News - ${label}`,
+    description:
+      slug === 'k04markw'
+        ? '株式会社LAplust（ラプラス）のすべてのニュース一覧です。'
+        : `株式会社LAplust（ラプラス）の${label}カテゴリのニュース一覧です。`,
+  };
 }
 
 export default async function CategoryPage({

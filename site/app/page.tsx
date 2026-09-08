@@ -24,10 +24,24 @@ const ASSETS = {
   techBand: `${GCS}/s-2400x927_v-frms_webp_393033b3-f8bc-4d61-8325-5ee8a3769b42.webp`,
 };
 
+// Google検索のリッチリザルト向け組織情報（構造化データ）
+const ORG_JSON_LD = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: '株式会社LAplust',
+  alternateName: 'LAplust, Inc.',
+  url: 'https://laplust.com',
+  logo: 'https://laplust.com/images/og_default.png',
+};
+
 export default function Home() {
   const news = getAllNews().slice(0, 3);
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(ORG_JSON_LD) }}
+      />
       <SiteHeader transparent />
       <ScrollReveal />
       <main>
