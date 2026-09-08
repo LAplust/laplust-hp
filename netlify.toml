@@ -6,3 +6,11 @@
 
 # フォーム受信は GAS Webアプリ（lib/submitForm.ts）に移行済みのため
 # Netlify Functions は使用しない
+
+# netlify.appサブドメインで同一内容が配信される重複を防ぎ、
+# 正規ドメインへ301転送する（deploy preview等の別サブドメインには影響しない）
+[[redirects]]
+  from = "https://effulgent-dasik-d4e619.netlify.app/*"
+  to = "https://laplust.com/:splat"
+  status = 301
+  force = true

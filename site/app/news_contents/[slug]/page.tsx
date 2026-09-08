@@ -34,7 +34,15 @@ export async function generateMetadata({
   return {
     title: post.title,
     description: post.description,
-    openGraph: post.ogImage ? { images: [post.ogImage] } : undefined,
+    alternates: { canonical: `/news_contents/${post.slug}` },
+    openGraph: {
+      type: 'article',
+      title: post.title,
+      description: post.description,
+      url: `/news_contents/${post.slug}`,
+      publishedTime: post.date,
+      images: post.ogImage ? [post.ogImage] : ['/images/og_default.png'],
+    },
   };
 }
 
@@ -48,8 +56,27 @@ export default async function NewsArticle({
   if (!post) notFound();
   const label = CATEGORY_LABEL[post.category] ?? post.category;
 
+  // Google検索のリッチリザルト向け構造化データ
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'NewsArticle',
+    headline: post.title,
+    datePublished: post.date,
+    mainEntityOfPage: `https://laplust.com/news_contents/${post.slug}`,
+    ...(post.ogImage ? { image: [`https://laplust.com${post.ogImage}`] } : {}),
+    publisher: {
+      '@type': 'Organization',
+      name: '株式会社LAplust',
+      logo: { '@type': 'ImageObject', url: 'https://laplust.com/images/og_default.png' },
+    },
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <SiteHeader />
       <main style={{ paddingTop: 'calc(var(--header-height) + 40px)' }}>
         <div className="container" style={{ maxWidth: 900 }}>

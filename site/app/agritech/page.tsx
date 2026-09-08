@@ -1,7 +1,11 @@
 import type { Metadata } from 'next';
 import ProjectListPage from '@/components/ProjectListPage';
 
-export const metadata: Metadata = { title: 'アグリテック プロジェクト一覧' };
+export const metadata: Metadata = {
+  title: 'アグリテック プロジェクト一覧',
+  description:
+    '株式会社LAplust（ラプラス）のアグリテック プロジェクト一覧。AI・ロボット・ドローンを活用した農業の自動化・省力化への取り組みをご紹介します。',
+};
 
 export default function AgritechPage() {
   return (

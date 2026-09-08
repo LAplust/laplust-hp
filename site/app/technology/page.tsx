@@ -7,7 +7,11 @@ import HomeLink from '@/components/HomeLink';
 import { Accordion, FaqItem } from './Accordion';
 import styles from './technology.module.css';
 
-export const metadata: Metadata = { title: 'Technology' };
+export const metadata: Metadata = {
+  title: 'Technology',
+  description:
+    '株式会社LAplust（ラプラス）の技術紹介。動画・画像解析に特化した機械学習/深層学習の研究開発力と、課題解決を現場実装まで支える技術をご紹介します。',
+};
 
 // オレンジ強調（現行サイトの code 装飾）
 function Em({ children }: { children: ReactNode }) {
