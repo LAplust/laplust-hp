@@ -8,6 +8,11 @@
 - 既存プロパティには現行サイトの計測履歴があるため、DNS切替前でも構築・検証できる
 - 作成後はURL共有で閲覧権限のみを配布できる（GA4アカウント権限は不要）
 
+## 運用中の環境（2026-09-08 構築済み）
+
+- ダッシュボードURL: https://lookerstudio.google.com/reporting/2f200a77-9c43-4285-9aaf-e09e35def2b9
+  （閲覧にはGoogleアカウントでのアクセス権が必要。共有は本レポートの「共有」から）
+
 ## 1. レポートの新規作成とGA4接続
 
 1. [lookerstudio.google.com](https://lookerstudio.google.com) にログイン（GA4と同じGoogleアカウント）
