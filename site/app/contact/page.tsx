@@ -20,14 +20,17 @@ export default function ContactPage() {
       <main style={{ paddingTop: 'calc(var(--header-height) + 48px)', paddingBottom: 96 }}>
         <div className="container">
           <h1 className="page-title">Contact</h1>
-          <div style={{ maxWidth: 640, margin: '40px auto 48px' }}>
-            <p>
-              下記フォームへ必要事項をご記入の上、送信してください。
-              <br />
-              3営業以内に担当者からご返答いたします。
-            </p>
-          </div>
-          <ContactForm formName="contact" typeOptions={TYPE_OPTIONS} />
+          <ContactForm
+            formName="contact"
+            typeOptions={TYPE_OPTIONS}
+            lead={
+              <p>
+                下記フォームへ必要事項をご記入の上、送信してください。
+                <br />
+                3営業以内に担当者からご返答いたします。
+              </p>
+            }
+          />
         </div>
       </main>
       <SiteFooter />

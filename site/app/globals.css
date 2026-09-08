@@ -706,6 +706,73 @@ button {
   font-size: 14px;
 }
 
+/* 送信完了モーダル（現行版準拠: 紺色半透過パネルをフォームの上に重ねる） */
+.form-done {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.form-done__panel {
+  position: relative;
+  width: 576px;
+  max-width: 100%;
+  padding: 56px 32px 48px;
+  border-radius: 4px;
+  background: rgba(23, 26, 49, 0.85);
+  color: #fff;
+  text-align: center;
+}
+
+.form-done__close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 30px;
+  height: 30px;
+  border: none;
+  background: #fff;
+  color: var(--color-main);
+  font-size: 20px;
+  line-height: 1;
+}
+
+.form-done__title {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.form-done__lead {
+  margin-top: 20px;
+  font-size: 14px;
+  line-height: 1.9;
+}
+
+.form-done__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 28px;
+  min-width: 148px;
+  padding: 11px 32px;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--color-main);
+  font-size: 14px;
+  transition: background-color 0.3s cubic-bezier(0.4, 0.4, 0, 1),
+    color 0.3s cubic-bezier(0.4, 0.4, 0, 1);
+}
+
+.form-done__btn:hover {
+  background: var(--color-main);
+  color: #fff;
+}
+
 /* honeypot（スパム対策）: 視覚的に隠す */
 .form__hp {
   position: absolute;

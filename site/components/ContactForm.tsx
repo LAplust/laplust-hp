@@ -5,11 +5,14 @@ import Link from 'next/link';
 import { submitForm } from '@/lib/submitForm';
 
 export default function ContactForm({
+  lead,
   typeOptions,
   serviceOptions,
   requireCompany = false,
   requireTel = false,
 }: {
+  // フォーム上部の案内文（送信完了後は表示しない）
+  lead?: React.ReactNode;
   // 記録先はGAS側で「お問い合わせ」シートに統一（送信元はpage列で判別）
   formName?: string;
   typeOptions: string[];
@@ -43,17 +46,34 @@ export default function ContactForm({
     }
   }
 
-  if (status === 'done') {
-    return (
-      <div className="form__status">
-        <p>お問い合わせを受け付けました。</p>
-        <p>3営業日以内に担当者からご返答いたします。</p>
-      </div>
-    );
-  }
-
   return (
-    <form className="form" onSubmit={onSubmit}>
+    <>
+      {/* 現行版準拠: 完了時はフォームの上に紺色半透過のモーダルを重ねる */}
+      {status === 'done' && (
+        <div className="form-done" role="dialog" aria-modal="true" aria-label="お問い合わせ完了">
+          <div className="form-done__panel">
+            <button
+              type="button"
+              className="form-done__close"
+              aria-label="閉じる"
+              onClick={() => setStatus('idle')}
+            >
+              ×
+            </button>
+            <p className="form-done__title">お問い合わせが完了しました</p>
+            <p className="form-done__lead">
+              このたびは、当社へお問い合わせいただき有難うございます。
+              <br />
+              弊社でお問い合わせ内容を確認の上、3営業日以内にお返事いたします。
+            </p>
+            <Link href="/" className="form-done__btn">
+              TOPページへ
+            </Link>
+          </div>
+        </div>
+      )}
+      {lead && <div style={{ maxWidth: 640, margin: '40px auto 48px' }}>{lead}</div>}
+      <form className="form" onSubmit={onSubmit}>
       {serviceOptions && (
         <div className="form__field">
           <span className="form__label">
@@ -184,6 +204,7 @@ export default function ContactForm({
       <button type="submit" className="btn-pill form__submit" disabled={status === 'sending'}>
         {status === 'sending' ? '送信中…' : '送信'}
       </button>
-    </form>
+      </form>
+    </>
   );
 }
