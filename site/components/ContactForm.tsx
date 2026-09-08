@@ -73,6 +73,17 @@ export default function ContactForm({
         </div>
       )}
       {lead && <div style={{ maxWidth: 640, margin: '40px auto 48px' }}>{lead}</div>}
+      <p
+        style={{
+          maxWidth: 640,
+          margin: '0 auto 32px',
+          fontSize: 13,
+          color: '#777',
+          textAlign: 'center',
+        }}
+      >
+        ※営業・売り込みを目的としたお問い合わせはご遠慮ください。
+      </p>
       <form className="form" onSubmit={onSubmit}>
       {serviceOptions && (
         <div className="form__field">
