@@ -3,7 +3,11 @@ import SiteHeader from '@/components/SiteHeader';
 import SiteFooter from '@/components/SiteFooter';
 import ContactForm from '@/components/ContactForm';
 
-export const metadata: Metadata = { title: 'Contact' };
+export const metadata: Metadata = {
+  title: 'Contact',
+  description:
+    '株式会社LAplust（ラプラス）へのお問い合わせページ。サービス・パートナーシップ・採用・取材に関するご相談はこちらのフォームからご連絡ください。',
+};
 
 const TYPE_OPTIONS = [
   'サービスに関するお問合せ',

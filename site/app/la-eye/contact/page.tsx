@@ -5,6 +5,9 @@ import ContactForm from '@/components/ContactForm';
 
 export const metadata: Metadata = {
   title: 'サービスお問い合わせ',
+  // 旧サイトと同一のdescription
+  description:
+    '画像解析AIの構築・導入に伴う手間やコストを大幅に削減し、AI精度向上と自走的な運用を実現するソリューション。カスタマイズ提供から業務効率化まで、社会のスマート化を支えるAIインフラです。',
 };
 
 const TYPE_OPTIONS = [
