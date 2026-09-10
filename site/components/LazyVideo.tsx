@@ -6,9 +6,12 @@ import { useEffect, useRef } from 'react';
 export default function LazyVideo({
   src,
   className,
+  poster,
 }: {
   src: string;
   className?: string;
+  // 動画読み込み前に即表示する静止画（1フレーム目）。読み込み中の空白を防ぐ
+  poster?: string;
 }) {
   const ref = useRef<HTMLVideoElement>(null);
 
@@ -39,6 +42,7 @@ export default function LazyVideo({
       ref={ref}
       data-src={src}
       className={className}
+      poster={poster}
       muted
       loop
       playsInline
