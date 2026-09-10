@@ -7,6 +7,18 @@
 # フォーム受信は GAS Webアプリ（lib/submitForm.ts）に移行済みのため
 # Netlify Functions は使用しない
 
+# アセットの長期キャッシュ（ファイル名にハッシュが含まれ内容が変わらないため安全。
+# 再訪問時のダウンロードをなくし、動画・画像の表示を高速化する）
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/images/posters/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
 # netlify.appサブドメインで同一内容が配信される重複を防ぎ、
 # 正規ドメインへ301転送する（deploy preview等の別サブドメインには影響しない）
 [[redirects]]

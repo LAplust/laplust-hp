@@ -50,6 +50,7 @@ export default function Home() {
           <video
             className={styles.heroVideo}
             src={ASSETS.heroVideo}
+            poster="/images/posters/576cb1c9-d182-4977-9867-6afddfd3aaac.jpg"
             autoPlay
             muted
             loop
@@ -135,7 +136,10 @@ export default function Home() {
             {/* プロダクト: ワンクリックアノテーション */}
             <div className={styles.productRow} data-reveal>
               <div className={styles.productVideo}>
-                <LazyVideo src={ASSETS.ocaVideo} />
+                <LazyVideo
+                  src={ASSETS.ocaVideo}
+                  poster="/images/posters/c8ce9bb2-d528-4e03-bf3a-0a0e44aeefae.jpg"
+                />
               </div>
               <div className={styles.productOverlay}>
                 <h3 className={styles.productTitle}>LAplustワンクリックアノテーション</h3>
@@ -152,7 +156,10 @@ export default function Home() {
             {/* プロダクト: LA-Eye/不良品判定 */}
             <div className={styles.productRow} data-reveal>
               <div className={styles.productVideo}>
-                <LazyVideo src={ASSETS.laeyeVideo} />
+                <LazyVideo
+                  src={ASSETS.laeyeVideo}
+                  poster="/images/posters/40ed8c41-691d-4c9c-979a-d4bddd00be99.jpg"
+                />
               </div>
               <div className={styles.productOverlay}>
                 <h3 className={styles.productTitle}>LA-Eye/不良品判定</h3>
