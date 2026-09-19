@@ -1,0 +1,52 @@
+# mainへのpushで自動ビルドし、さくらVPSへ配信ファイルを同期する
+# 必要なリポジトリSecrets（Settings → Secrets and variables → Actions）:
+#   VPS_HOST     … VPSのIPアドレスまたはホスト名
+#   VPS_USER     … SSH接続ユーザー（例: laplust）
+#   VPS_SSH_KEY  … 上記ユーザーの秘密鍵（OpenSSH形式・パスフレーズなし）
+# Secrets未設定の間はこのワークフローは失敗する（設定後に自動で機能する）
+name: Deploy to Sakura VPS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+
+      - name: Build
+        working-directory: site
+        run: |
+          npm ci
+          npm run build
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Sync to VPS
+        run: |
+          rsync -az --delete \
+            -e "ssh -i ~/.ssh/deploy_key" \
+            site/out/ "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/www/laplust/"
+
+      - name: Verify
+        run: |
+          ssh -i ~/.ssh/deploy_key "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" \
+            "test -f /var/www/laplust/index.html && echo 'deploy OK'"
