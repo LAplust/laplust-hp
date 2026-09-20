@@ -139,16 +139,27 @@ jobs:
           payload=$(jq -n --arg text "$(printf '%s *%s*\n%s' "$icon" "$SUBJECT" "$BODY")" '{text: $text}')
           curl -s -X POST -H 'Content-type: application/json' --data "$payload" "$SLACK_WEBHOOK_URL"
 
+      # サードパーティ製アクションを使わずcurlで直接SMTP送信（組織のActionsポリシー対応）
       - name: Notify Email
         if: steps.state.outputs.notify != 'none' && env.MAIL_APP_PASSWORD != ''
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: smtp.gmail.com
-          server_port: 465
-          secure: true
-          username: ${{ secrets.MAIL_USERNAME }}
-          password: ${{ secrets.MAIL_APP_PASSWORD }}
-          subject: ${{ steps.msg.outputs.subject }}
-          to: info@laplust.com
-          from: サイト死活監視 <info@laplust.com>
-          body: ${{ steps.msg.outputs.body }}
+        env:
+          MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+          SUBJECT: ${{ steps.msg.outputs.subject }}
+          BODY: ${{ steps.msg.outputs.body }}
+          MAIL_TO: info@laplust.com
+        run: |
+          enc() { printf '=?UTF-8?B?%s?=' "$(printf '%s' "$1" | base64 -w0)"; }
+          {
+            printf 'From: %s <%s>\r\n' "$(enc 'サイト死活監視')" "$MAIL_USERNAME"
+            printf 'To: %s\r\n' "$MAIL_TO"
+            printf 'Subject: %s\r\n' "$(enc "$SUBJECT")"
+            printf 'MIME-Version: 1.0\r\n'
+            printf 'Content-Type: text/plain; charset=UTF-8\r\n'
+            printf 'Content-Transfer-Encoding: 8bit\r\n'
+            printf '\r\n'
+            printf '%s\n' "$BODY"
+          } > "$RUNNER_TEMP/mail.txt"
+          curl -s --ssl-reqd --url 'smtps://smtp.gmail.com:465' \
+            --mail-from "$MAIL_USERNAME" --mail-rcpt "$MAIL_TO" \
+            --user "$MAIL_USERNAME:$MAIL_APP_PASSWORD" \
+            -T "$RUNNER_TEMP/mail.txt"
