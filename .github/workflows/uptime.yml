@@ -1,0 +1,154 @@
+# laplust.com の死活監視
+# 約5分間隔（GitHubのスケジューラ都合で実際は5〜15分）でトップページを外形監視し、
+# ダウン検知時に GitHub Issue起票＋Slack＋メールで通知、復旧時にも通知する。
+#
+# 必要なリポジトリSecrets（未設定の通知先はスキップされる。Issue起票は常に動く）:
+#   SLACK_WEBHOOK_URL  … SlackのIncoming Webhook URL
+#   MAIL_USERNAME      … Gmail送信元アドレス（例: info@laplust.com）
+#   MAIL_APP_PASSWORD  … 上記アカウントのGoogleアプリパスワード（通常のパスワードではない）
+#
+# 設定手順・テスト方法: docs/260920_死活監視設定.md
+# 注意: GitHubの仕様で、リポジトリに60日間コミットがないとスケジュール実行が
+#       自動停止する（停止前にGitHubから警告メールが届く。Actionsタブから再有効化可能）
+name: Uptime Monitor
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+    inputs:
+      url:
+        description: '監視URL（通知テスト時は https://laplust.com/zzz-test 等の404 URLを指定）'
+        default: 'https://laplust.com/'
+
+concurrency:
+  group: uptime-monitor
+  cancel-in-progress: false
+
+permissions:
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      TARGET_URL: ${{ github.event.inputs.url || 'https://laplust.com/' }}
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      MAIL_APP_PASSWORD: ${{ secrets.MAIL_APP_PASSWORD }}
+    steps:
+      - name: Check site (3回リトライ)
+        id: check
+        run: |
+          code=000
+          for i in 1 2 3; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 20 "$TARGET_URL" || echo 000)
+            if [ "$code" = "200" ]; then break; fi
+            sleep 30
+          done
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          echo "checked_at=$(TZ=Asia/Tokyo date '+%Y-%m-%d %H:%M') JST" >> "$GITHUB_OUTPUT"
+
+      # ダウン中の連続通知を防ぐため、site-downラベルのIssueを状態管理に使う
+      - name: Update state issue
+        id: state
+        uses: actions/github-script@v7
+        env:
+          CODE: ${{ steps.check.outputs.code }}
+          CHECKED_AT: ${{ steps.check.outputs.checked_at }}
+        with:
+          script: |
+            const code = process.env.CODE;
+            const down = code !== '200';
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo,
+              state: 'open', labels: 'site-down',
+            });
+            const open = issues[0];
+            let notify = 'none';
+            if (down && !open) {
+              await github.rest.issues.create({
+                owner: context.repo.owner, repo: context.repo.repo,
+                title: `【障害】laplust.com がダウンしています (HTTP ${code})`,
+                labels: ['site-down'],
+                body: [
+                  '死活監視がダウンを検知しました（3回リトライ後も応答なし）。',
+                  '',
+                  `- HTTPコード: ${code}（000は接続不可）`,
+                  `- 検知時刻: ${process.env.CHECKED_AT}`,
+                  '',
+                  '## 一次対応',
+                  '1. さくらVPSコントロールパネルでサーバー稼働状態を確認 → 停止していれば起動',
+                  '2. SSHで入れる場合: `sudo systemctl status nginx` → 落ちていれば `sudo systemctl restart nginx`',
+                  '3. 直近のデプロイが原因の場合: Actionsタブから直前の正常デプロイをRe-run',
+                  '',
+                  '詳細: docs/260919_さくらVPS移行手順.md / Notion「🔧 サイト管理情報」',
+                  '',
+                  '復旧が確認されるとこのIssueは自動でクローズされます。',
+                ].join('\n'),
+              });
+              notify = 'down';
+            } else if (!down && open) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: open.number,
+                body: `復旧を確認しました（HTTP 200・${process.env.CHECKED_AT}）。自動クローズします。`,
+              });
+              await github.rest.issues.update({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: open.number, state: 'closed',
+              });
+              notify = 'recovered';
+            }
+            core.setOutput('notify', notify);
+
+      - name: Build message
+        if: steps.state.outputs.notify != 'none'
+        id: msg
+        run: |
+          if [ "${{ steps.state.outputs.notify }}" = "down" ]; then
+            echo "subject=【障害】laplust.com がダウンしています (HTTP ${{ steps.check.outputs.code }})" >> "$GITHUB_OUTPUT"
+            {
+              echo "body<<MSGEOF"
+              echo "コーポレートサイトの死活監視がダウンを検知しました。"
+              echo ""
+              echo "・URL: https://laplust.com/"
+              echo "・HTTPコード: ${{ steps.check.outputs.code }}（000は接続不可）"
+              echo "・検知時刻: ${{ steps.check.outputs.checked_at }}"
+              echo ""
+              echo "一次対応: (1) さくらVPSコントロールパネルでサーバー稼働確認→停止なら起動 (2) SSHで nginx を再起動 (3) 直前デプロイ起因ならActionsからRe-run"
+              echo "対応状況の記録: https://github.com/LAplust/laplust-hp/issues （site-downラベル）"
+              echo "MSGEOF"
+            } >> "$GITHUB_OUTPUT"
+          else
+            echo "subject=【復旧】laplust.com の復旧を確認しました" >> "$GITHUB_OUTPUT"
+            {
+              echo "body<<MSGEOF"
+              echo "laplust.com が正常応答（HTTP 200）に戻ったことを確認しました（${{ steps.check.outputs.checked_at }}）。"
+              echo "障害Issueは自動クローズ済みです。原因の記録はIssueへの追記をお願いします。"
+              echo "MSGEOF"
+            } >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Notify Slack
+        if: steps.state.outputs.notify != 'none' && env.SLACK_WEBHOOK_URL != ''
+        env:
+          SUBJECT: ${{ steps.msg.outputs.subject }}
+          BODY: ${{ steps.msg.outputs.body }}
+        run: |
+          if [ "${{ steps.state.outputs.notify }}" = "down" ]; then icon="🚨"; else icon="✅"; fi
+          payload=$(jq -n --arg text "$(printf '%s *%s*\n%s' "$icon" "$SUBJECT" "$BODY")" '{text: $text}')
+          curl -s -X POST -H 'Content-type: application/json' --data "$payload" "$SLACK_WEBHOOK_URL"
+
+      - name: Notify Email
+        if: steps.state.outputs.notify != 'none' && env.MAIL_APP_PASSWORD != ''
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_APP_PASSWORD }}
+          subject: ${{ steps.msg.outputs.subject }}
+          to: info@laplust.com
+          from: サイト死活監視 <info@laplust.com>
+          body: ${{ steps.msg.outputs.body }}
